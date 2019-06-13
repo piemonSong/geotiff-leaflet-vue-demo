@@ -5,6 +5,8 @@ import LMap1 from '@/components/VMap'
 import Vectorgrid from '@/components/Vectorgrid'
 import TestCanvasLayer from '@/components/TestCanvasLayer'
 import TestFieldCanvas from '@/components/TestFieldCanvas'
+import TestGeoraster from '@/components/TestGeoraster'
+import ElementCompTest from '@/components/ElementCompTest'
 Vue.use(Router)
 
 export default new Router({
@@ -26,6 +28,16 @@ export default new Router({
       path: '/cf',
       name: 'fieldcanvas',
       component: TestFieldCanvas
+    },
+    {
+      path: '/gr',
+      name: 'georaster',
+      component: TestGeoraster
+    },
+    {
+      path: '/ele',
+      name: 'ele-test',
+      component: ElementCompTest
     }
   ]
 })

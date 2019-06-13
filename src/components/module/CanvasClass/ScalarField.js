@@ -103,13 +103,14 @@ export default class ScalarField extends Field {
             let tiff = await GeoTIFF.fromArrayBuffer(data); // geotiff.js
             let image = await  tiff.getImage();
             let rasters =await  image.readRasters({resampleMethod: 'bilinear'});
-            console.log(rasters)
+
             let tiepoint = image.getTiePoints()[0];
             let fileDirectory = image.getFileDirectory();
             let [xScale, yScale] = fileDirectory.ModelPixelScale;
             if (typeof bandIndexes === 'undefined' || bandIndexes.length === 0) {
               bandIndexes = [...Array(rasters.length).keys()];
             }
+
             let scalarFields = [];
             scalarFields = bandIndexes.map(function(bandIndex) {
               let zs = rasters[bandIndex]; // left-right and top-down order
@@ -170,6 +171,7 @@ export default class ScalarField extends Field {
     }
 
     _arrayTo2d(array, nRows, nCols) {
+      //console.log(nRows,nCols)
         let grid = [];
         let p = 0;
         for (var j = 0; j < nRows; j++) {
@@ -180,7 +182,9 @@ export default class ScalarField extends Field {
             }
             grid[j] = row;
         }
+        //console.log(grid,'grid')
         return grid;
+
     }
 
     _newDataArrays(params) {

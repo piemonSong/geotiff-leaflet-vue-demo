@@ -102,6 +102,7 @@ L.CanvasLayer.Field = L.CanvasLayer.extend({
     /* eslint-enable no-unused-vars */
 
     setData: function(field) {
+      console.log(field,'field')
         this.options.inFilter && field.setFilter(this.options.inFilter);
         this._field = field;
         this.needRedraw();

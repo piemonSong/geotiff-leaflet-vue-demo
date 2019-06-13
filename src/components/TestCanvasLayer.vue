@@ -22,7 +22,7 @@
       return {
         initialLocation: L.latLng(35, 120),
         initialZoom: 4,
-        url:'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',
+        url:'https://t0.tianditu.gov.cn/DataServer?T=ter_w&X={x}&Y={y}&L={z}&tk=a10b5d58603d9a7abfe4731e8360fa91',
       }
     }
   }

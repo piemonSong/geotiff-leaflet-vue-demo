@@ -24,7 +24,7 @@
           return {
               zoom:5,
               center:L.latLng(35.123312,115.123312),
-              url:'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+              url:'https://t0.tianditu.gov.cn/DataServer?T=ter_w&X={x}&Y={y}&L={z}&tk=a10b5d58603d9a7abfe4731e8360fa91',
               attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
               marker:L.latLng(35.123312,115.123312),
               showParagraph: false,

@@ -1,7 +1,8 @@
 <template>
   <div id="app">
+
     <v-map :zoom="initialZoom" :center="initialLocation">
-      <v-protobuf :url="tilesUrl" :options="opts"></v-protobuf>
+      <v-protobuf :url="tilesUrl" :options="opts" ref="grid"></v-protobuf>
     </v-map>
   </div>
 </template>
@@ -27,16 +28,20 @@
         opts: vectorTileOptions,
         tilesUrl: "https://basemaps.arcgis.com/v1/arcgis/rest/services/World_Basemap/VectorTileServer/tile/{z}/{y}/{x}.pbf"
       }
+    },
+    methods:{
+      changeColor(){
+          this.$refs.grid.changeColor()
+      }
     }
   }
 </script>
 
 <style>
-  html, body {
-    margin: 0;
-    height: 100%;
-  }
+
   #app {
     height: 100%;
+    position: relative;
   }
+
 </style>

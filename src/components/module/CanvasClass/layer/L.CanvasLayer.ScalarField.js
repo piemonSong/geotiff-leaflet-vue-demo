@@ -1,5 +1,6 @@
 import Cell from '../Cell';
 import * as chroma from 'chroma-js'
+import * as GPU from 'gpu.js'
 /**
  * ScalarField on canvas (a 'Raster')
  */
@@ -76,12 +77,33 @@ L.CanvasLayer.ScalarField = L.CanvasLayer.Field.extend({
         let width = this._canvas.width;
         let height = this._canvas.height;
 
-        let img = ctx.createImageData(width, height);
-        let data = img.data;
+        //let img = ctx.createImageData(width, height);
 
-        this._prepareImageIn(data, width, height);
-        console.log(img)
-        ctx.putImageData(img, 0, 0);
+      const _this = this;
+      const matrix =  this._getAsyncMatrix(width,height,8);
+      const t =  Date.now();
+
+     (async () =>
+      {
+        for (let k = 0; k < matrix.length; k++) {
+          await  _this._prepareImageInAsync(...matrix[k], ctx)
+        }
+
+      })()
+      console.log('DONE')
+      console.log(Date.now() - t)
+
+
+
+        //let data = img.data;
+
+      //console.log(width,height)
+        //const result = this._prepareImageInUseGpu(width,height)
+     // console.log(result)
+        //ctx.drawImage(result, 0, 0);
+        //this._prepareImageIn(data, width, height);
+
+        //ctx.putImageData(img, 0, 0);
     },
 
     /**
@@ -115,9 +137,97 @@ L.CanvasLayer.ScalarField = L.CanvasLayer.Field.extend({
                 pos = pos + 4;
             }
         }
-        console.log(data)
+       // console.log(data)
     },
+    async _prepareImageInAsync(x0,y0,w,h,ctx){
+       // return new Promise((v) =>{
 
+          let f = this.options.interpolate ? 'interpolatedValueAt' : 'valueAt';
+
+          let pos = 0;
+          const img = ctx.createImageData(w, h)
+
+          const t1 = Date.now()
+
+          //console.log(Date.now() - t1,'finish loop')
+          //ctx.putImageData(img, x0, y0);
+          //console.log(Date.now() - t1,'finish draw')
+
+
+       // })
+    },
+    _prepareImageInUseGpu(width,height){
+      let gpu = new GPU({mode: "gpu"})
+      let f = this.options.interpolate ? 'interpolatedValueAt' : 'valueAt';
+      let t1 = Date.now()
+      let pos = 0;
+      //const arr = []
+       const arr = new Float32Array(height*width)
+      const fun = this._field
+      let map =  this._map
+      for (let j = 0; j < height/4; j++) {
+        for (let i = 0; i < width/4; i++) {
+          let pointCoords = map.containerPointToLatLng([i, j]);
+          let lon = pointCoords.lng;
+          let lat = pointCoords.lat;
+
+          let v = fun[f](lon, lat); // 'valueAt' | 'interpolatedValueAt' || TODO check some 'artifacts'
+          //arr.push(v)
+          arr[width*j+i] = v
+        }
+      }
+      console.log(Date.now() - t1)
+      // const fun1 = this._map.containerPointToLatLng,
+      //   fun2 = this._field['valueAt'],
+      //   fun3 = this._getColorFor
+      // //gpu.addFunction(fun1);
+      // const calc = gpu.createKernel(function () {
+      //     return this.thread.x+this.thread.y
+      // }).setOutput([width,height])
+      //   .setFunctions([mySuperFunction]);;
+      // console.log(calc())
+      // const krender = gpu.createKernel(function() {
+      //   let pointCoords = fun1([this.thread.y, this.thread.x]);
+      //   let lon = pointCoords.lng;
+      //   let lat = pointCoords.lat;
+      //
+      //   let v = fun2(lon, lat); // 'valueAt' | 'interpolatedValueAt' || TODO check some 'artifacts'
+      //   if (v !== null) {
+      //     let color = fun3(v);
+      //     let [R, G, B, A] = color.rgba();
+      //     this.color(R, G, B, A);
+      //
+      //   }
+      // })
+      //   .setFunctions([fun1,fun2,fun3])
+      //   .setOutput([width, height])
+      //   .setGraphical(true);
+      //
+      // return  krender.getCanvas();
+    },
+    // _getDelay(x0,y0,wt,wt){
+    //   // return new Promise(function () {
+    //   //
+    //   // })
+    //   // for (let j = y0; j < y0+h; j++) {
+    //   //   for (let i = x0; i <x0+w; i++) {
+    //   //     let pointCoords = _map.containerPointToLatLng([i, j]);
+    //   //     let lon = pointCoords.lng;
+    //   //     let lat = pointCoords.lat;
+    //   //
+    //   //     // let v = field[f](lon, lat); // 'valueAt' | 'interpolatedValueAt' || TODO check some 'artifacts'
+    //   //     // if (v !== null) {
+    //   //     //   let color = this._getColorFor(v);
+    //   //     //   let [R, G, B, A] = color.rgba();
+    //   //     //   data[pos] = R;
+    //   //     //   data[pos + 1] = G;
+    //   //     //   data[pos + 2] = B;
+    //   //     //   data[pos + 3] = 255; // not percent in alpha but hex 0-255
+    //   //     // }
+    //   //     // pos = pos + 4;
+    //   //   }
+    //   // }
+    // },
     /**
      * Draws the field as a set of arrows. Direction from 0 to 360 is assumed.
      */
@@ -205,6 +315,21 @@ L.CanvasLayer.ScalarField = L.CanvasLayer.Field.extend({
         }
         let color = chroma(c); // to be more flexible, a chroma color object is always created || TODO improve efficiency
         return color;
+    },
+    /**
+     * get canvas Tile
+     */
+    _getAsyncMatrix(w,h,num){
+       let x0 = Math.floor(w/num),y0 =  Math.floor(h/num)
+       const matrix = []
+       for(let i = 0; i < num;i++){
+         for(let j = 0; j < num;j++){
+            const w0 = (j == num-1)?w-(j-1)*x0:x0
+            const h0 = (i == num-1)?h-(i-1)*y0:y0
+            matrix.push([j*x0,i*y0,w0,h0])
+         }
+       }
+       return matrix
     }
 });
 

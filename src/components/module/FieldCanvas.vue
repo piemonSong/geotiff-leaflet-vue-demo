@@ -24,14 +24,16 @@
 
           return res.arrayBuffer()
       }).then((buffer) =>{
+          const t0 = Date.now()
 
           L.ScalarField.fromGeoTIFF(buffer,0, (ndvi)=>{
-            console.log(ndvi)
+
+         //console.log(Date.now() - t0,'get ndvi')
           this.canvas = L.canvasLayer.scalarField(ndvi, {
             color: chroma.scale('BrBG').domain(ndvi.range),
             inFilter: (v) => v !== 0,
             opacity:0.5,
-            interpolate:true
+            //interpolate:true
           })
           // .addTo(map);
           if(this.$parent._isMounted){
