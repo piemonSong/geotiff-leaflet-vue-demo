@@ -14,7 +14,7 @@
     "@turf/boolean-point-in-polygon": "^6.0.1",
     "@turf/projection": "^6.0.1",
     "chroma-js": "^1.4.0",
-    "d3": "^5.7.0",
+    "d3": "^7.6.1",
     "ele-multi-cascader": "^2.0.7",
     "element-ui": "^2.4.8",
     "georaster": "^0.4.0",
